@@ -462,11 +462,12 @@ with col2:
 
 with col3:
     abschlag_text = f"inkl. {pension['versorgungsabschlag_prozent']:.2f}% Abschlag" if pension['versorgungsabschlag_prozent'] > 0 else f"{pension['effektiver_ruhegehaltssatz']:.2f}% Ruhegehaltssatz"
+    stufe_pension_text = f"Stufe {pension.get('stufe_bei_pension', stufe)}"
     st.markdown("""
     <div class="result-card">
         <div class="result-card-header">Altersrente (""" + str(gewuenschtes_pensionsalter) + """ J.)</div>
         <div class="result-value">""" + fmt_euro(pension['ruhegehalt_brutto']) + """</div>
-        <div class="result-subvalue">""" + abschlag_text + """</div>
+        <div class="result-subvalue">""" + stufe_pension_text + """, """ + abschlag_text + """</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -605,11 +606,15 @@ with tab2:
 
     with col_p1:
         st.markdown("**Parameter**")
+        stufe_info = f"Stufe {pension.get('stufe_bei_pension', stufe)}"
+        if pension.get('stufe_bei_pension', stufe) == pension.get('max_stufe', 12):
+            stufe_info += " (max)"
         st.markdown(f"""
 | Parameter | Wert |
 |-----------|-----:|
 | Pensionsalter | {gewuenschtes_pensionsalter} Jahre |
 | Jahr | {jahr_pension} |
+| **Erfahrungsstufe bei Pension** | **{stufe_info}** |
 | Regelaltersgrenze | {pension['regelaltersgrenze']} Jahre |
 | Dienstjahre | {pension['dienstjahre']:.1f} Jahre |
 | Ruhegehaltssatz | {pension['ruhegehaltssatz']:.2f}% |
@@ -618,9 +623,13 @@ with tab2:
 | Ruhegehaltsfähige Bezüge | {fmt_euro(pension['ruhegehaltsfaehige_bezuege'])} |
 | **Ruhegehalt brutto** | **{fmt_euro(pension['ruhegehalt_brutto'])}** |
         """)
+        st.caption(f"Aktuelle Stufe: {stufe} → Bei Pension: {pension.get('stufe_bei_pension', stufe)}")
 
     with col_p2:
         st.markdown("**Pensionsentwicklung nach Alter**")
+
+        # Antragsaltersgrenze: 63 für normale Beamte, 60 für Polizei/FW
+        von_alter_vergleich = 60 if ist_polizei_feuerwehr else 63
 
         pension_verlauf = berechne_pension_nach_alter(
             besoldungsgruppe=besoldungsgruppe,
@@ -633,7 +642,7 @@ with tab2:
             teilzeitanteil=teilzeitanteil,
             arbeitszeit_faktor=arbeitszeit_faktor,
             ist_polizei_feuerwehr=ist_polizei_feuerwehr,
-            von_alter=60,
+            von_alter=von_alter_vergleich,
             bis_alter=67
         )
 
@@ -734,9 +743,10 @@ with tab4:
     with col_v2:
         st.markdown("**Pensionsalter-Vergleich**")
 
-        vergleich_text = "| Alter | Pension | Abschlag |\n|------:|--------:|---------:|\n"
+        vergleich_text = "| Alter | Stufe | Pension | Abschlag |\n|------:|------:|--------:|---------:|\n"
         for p in pension_verlauf:
-            vergleich_text += f"| {p['pensionsalter']} | {fmt_euro(p['ruhegehalt_brutto'])} | {p['versorgungsabschlag_prozent']:.2f}% |\n"
+            stufe_p = p.get('stufe_bei_pension', stufe)
+            vergleich_text += f"| {p['pensionsalter']} | {stufe_p} | {fmt_euro(p['ruhegehalt_brutto'])} | {p['versorgungsabschlag_prozent']:.2f}% |\n"
 
         st.markdown(vergleich_text)
 

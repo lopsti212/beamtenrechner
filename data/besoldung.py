@@ -173,6 +173,21 @@ MIN_STUFEN = {
 # Mindestversorgung: A4 Stufe 8 (für DU-Berechnung)
 MINDESTVERSORGUNG_GRUNDGEHALT = 3157.75  # A4 Stufe 8
 
+# Stufenlaufzeiten NRW (Jahre bis zur nächsten Stufe)
+# Format: {von_stufe: Jahre_bis_naechste_stufe}
+# Nach §27 LBesG NRW: Stufen 2-4: je 2 Jahre, Stufen 5-7: je 3 Jahre, ab Stufe 8: je 4 Jahre
+STUFENLAUFZEITEN = {
+    3: 2,   # Stufe 3 -> 4: 2 Jahre
+    4: 2,   # Stufe 4 -> 5: 2 Jahre
+    5: 3,   # Stufe 5 -> 6: 3 Jahre
+    6: 3,   # Stufe 6 -> 7: 3 Jahre
+    7: 3,   # Stufe 7 -> 8: 3 Jahre
+    8: 4,   # Stufe 8 -> 9: 4 Jahre
+    9: 4,   # Stufe 9 -> 10: 4 Jahre
+    10: 4,  # Stufe 10 -> 11: 4 Jahre
+    11: 4,  # Stufe 11 -> 12: 4 Jahre
+}
+
 
 def get_grundgehalt(besoldungsgruppe: str, stufe: int) -> float:
     """
@@ -203,3 +218,40 @@ def get_max_stufe(besoldungsgruppe: str) -> int:
 def get_min_stufe(besoldungsgruppe: str) -> int:
     """Gibt die minimale Stufe für eine Besoldungsgruppe zurück."""
     return MIN_STUFEN.get(besoldungsgruppe, 3)
+
+
+def berechne_stufe_nach_dienstjahren(
+    besoldungsgruppe: str,
+    aktuelle_stufe: int,
+    zusaetzliche_dienstjahre: int
+) -> int:
+    """
+    Berechnet die Erfahrungsstufe nach einer bestimmten Anzahl von Dienstjahren.
+
+    Args:
+        besoldungsgruppe: z.B. "A13"
+        aktuelle_stufe: Aktuelle Erfahrungsstufe
+        zusaetzliche_dienstjahre: Anzahl zusätzlicher Dienstjahre
+
+    Returns:
+        Erfahrungsstufe nach den zusätzlichen Dienstjahren
+    """
+    max_stufe = get_max_stufe(besoldungsgruppe)
+    min_stufe = get_min_stufe(besoldungsgruppe)
+
+    # Sicherstellen, dass aktuelle Stufe gültig ist
+    stufe = max(min_stufe, min(aktuelle_stufe, max_stufe))
+
+    verbleibende_jahre = zusaetzliche_dienstjahre
+
+    while verbleibende_jahre > 0 and stufe < max_stufe:
+        # Jahre bis zur nächsten Stufe
+        jahre_bis_naechste = STUFENLAUFZEITEN.get(stufe, 4)
+
+        if verbleibende_jahre >= jahre_bis_naechste:
+            stufe += 1
+            verbleibende_jahre -= jahre_bis_naechste
+        else:
+            break
+
+    return min(stufe, max_stufe)

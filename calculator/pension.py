@@ -4,6 +4,7 @@ Ruhegehalt-Berechnung (Altersrente) für Beamte NRW
 
 from calculator.gehalt import berechne_ruhegehaltsfaehige_bezuege
 from data.familienzuschlag import STANDARD_MIETENSTUFE
+from data.besoldung import berechne_stufe_nach_dienstjahren, get_max_stufe
 
 
 # Konstanten
@@ -130,7 +131,7 @@ def berechne_ruhegehalt(
 
     Args:
         besoldungsgruppe: z.B. "A13"
-        stufe: Erfahrungsstufe
+        stufe: Aktuelle Erfahrungsstufe
         geburtsjahr: Geburtsjahr
         jahr_verbeamtung: Jahr der Verbeamtung
         jahr_pension: Gewünschtes Jahr der Pensionierung
@@ -144,6 +145,9 @@ def berechne_ruhegehalt(
     Returns:
         Dictionary mit allen Berechnungsergebnissen
     """
+    import datetime
+    aktuelles_jahr = datetime.datetime.now().year
+
     # Alter bei Pensionierung
     alter_pension = jahr_pension - geburtsjahr
 
@@ -161,6 +165,15 @@ def berechne_ruhegehalt(
         teilzeitanteil
     )
 
+    # Erfahrungsstufe bei Pensionierung berechnen
+    jahre_bis_pension = max(0, jahr_pension - aktuelles_jahr)
+    stufe_bei_pension = berechne_stufe_nach_dienstjahren(
+        besoldungsgruppe,
+        stufe,
+        jahre_bis_pension
+    )
+    max_stufe = get_max_stufe(besoldungsgruppe)
+
     # Ruhegehaltssatz
     ruhegehaltssatz = berechne_ruhegehaltssatz(dienstjahre)
 
@@ -174,10 +187,10 @@ def berechne_ruhegehalt(
     # Effektiver Ruhegehaltssatz nach Abschlag
     effektiver_satz = ruhegehaltssatz * (1 - versorgungsabschlag / 100)
 
-    # Ruhegehaltsfähige Bezüge
+    # Ruhegehaltsfähige Bezüge mit projizierter Stufe
     ruhegehaltsfaehige_bezuege = berechne_ruhegehaltsfaehige_bezuege(
         besoldungsgruppe,
-        stufe,
+        stufe_bei_pension,
         verheiratet,
         mietenstufe,
         arbeitszeit_faktor
@@ -197,6 +210,8 @@ def berechne_ruhegehalt(
         "ruhegehalt_brutto": round(ruhegehalt_brutto, 2),
         "ist_vorzeitig": alter_pension < regelaltersgrenze,
         "jahre_vor_grenze": max(0, regelaltersgrenze - alter_pension),
+        "stufe_bei_pension": stufe_bei_pension,
+        "max_stufe": max_stufe,
     }
 
 
