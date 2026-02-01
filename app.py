@@ -510,7 +510,7 @@ with col_vl2:
         y=[netto_daten["netto"], du_rente["du_rente_brutto"]],
         marker_color=["#4a7c4a", "#7c4a4a"],
         text=[fmt_euro(netto_daten["netto"]), fmt_euro(du_rente["du_rente_brutto"])],
-        textposition="outside",
+        textposition="inside",
         textfont=dict(color="#e0e0e0", size=11)
     ))
 
@@ -624,7 +624,7 @@ with tab2:
             y=pension_liste,
             marker_color=["#7c4a4a" if a > 0 else "#4a7c4a" for a in abschlag_liste],
             text=[fmt_euro(p) for p in pension_liste],
-            textposition="outside",
+            textposition="inside",
             textfont=dict(color="#e0e0e0", size=9)
         ))
 
@@ -676,7 +676,7 @@ with tab4:
             y=werte,
             marker_color=farben,
             text=[fmt_euro(w) for w in werte],
-            textposition="outside",
+            textposition="inside",
             textfont=dict(color="#e0e0e0", size=11)
         ))
 
