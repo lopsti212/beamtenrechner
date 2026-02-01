@@ -9,7 +9,8 @@ from data.lohnsteuer import berechne_lohnsteuer_monatlich
 def berechne_netto(
     brutto_monatlich: float,
     steuerklasse: int,
-    kirchensteuer: bool = False
+    kirchensteuer: bool = False,
+    pkv_beitrag: float = None
 ) -> dict:
     """
     Berechnet das Nettogehalt eines Beamten.
@@ -19,6 +20,7 @@ def berechne_netto(
         brutto_monatlich: Monatliches Bruttogehalt
         steuerklasse: Steuerklasse 1-6
         kirchensteuer: True wenn Kirchensteuer zu zahlen ist
+        pkv_beitrag: PKV-Beitrag in Euro (optional, wenn None oder 0 wird 0 verwendet)
 
     Returns:
         Dictionary mit Brutto, Abzügen und Netto
@@ -30,10 +32,10 @@ def berechne_netto(
         kirchensteuer=kirchensteuer
     )
 
-    # Private Krankenversicherung (PKV) - geschätzt ca. 4% des Bruttos
-    # Beihilfe deckt 50-80%, Rest privat versichert
-    # Vereinfacht: 4% des Bruttos als PKV-Beitrag
-    pkv_beitrag = brutto_monatlich * 0.04
+    # Private Krankenversicherung (PKV)
+    # Wenn kein Beitrag angegeben, auf 0 setzen
+    if pkv_beitrag is None or pkv_beitrag <= 0:
+        pkv_beitrag = 0.0
 
     # Gesamtabzüge
     abzuege_gesamt = steuern["gesamt"] + pkv_beitrag

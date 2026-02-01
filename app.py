@@ -317,6 +317,15 @@ steuerklasse = st.sidebar.selectbox(
 
 kirchensteuer = st.sidebar.checkbox("Kirchensteuer", value=False)
 
+pkv_beitrag = st.sidebar.number_input(
+    "PKV-Beitrag (€/Monat)",
+    min_value=0.0,
+    max_value=2000.0,
+    value=0.0,
+    step=10.0,
+    help="Optionaler monatlicher PKV-Beitrag. Bei 0 wird kein Beitrag abgezogen."
+)
+
 # 3. Dienstzeiten
 st.sidebar.markdown("## Dienstzeiten")
 
@@ -384,7 +393,8 @@ gehalt = berechne_bruttogehalt(
 netto_daten = berechne_netto(
     brutto_monatlich=gehalt["brutto"],
     steuerklasse=steuerklasse,
-    kirchensteuer=kirchensteuer
+    kirchensteuer=kirchensteuer,
+    pkv_beitrag=pkv_beitrag
 )
 
 jahr_pension = geburtsjahr + gewuenschtes_pensionsalter
@@ -417,6 +427,10 @@ du_rente = berechne_du_rente(
 )
 
 versorgungsluecke = netto_daten["netto"] - du_rente["du_rente_brutto"]
+
+# Kindergeld berechnen (nur zur Info, nicht im Netto enthalten)
+KINDERGELD_PRO_KIND = 259.0  # Stand 2026
+kindergeld_gesamt = anzahl_kinder * KINDERGELD_PRO_KIND
 
 # Hilfsfunktion für Euro-Formatierung
 def fmt_euro(betrag):
@@ -538,16 +552,29 @@ with tab1:
 
     with col_g2:
         st.markdown("**Abzüge**")
+        pkv_label = "PKV-Beitrag" if pkv_beitrag > 0 else "PKV-Beitrag (nicht angegeben)"
         st.markdown(f"""
 | Abzug | Betrag |
 |-------|-------:|
 | Lohnsteuer | {fmt_euro(netto_daten['lohnsteuer'])} |
 | Solidaritätszuschlag | {fmt_euro(netto_daten['solidaritaetszuschlag'])} |
 | Kirchensteuer | {fmt_euro(netto_daten['kirchensteuer'])} |
-| PKV-Beitrag (geschätzt) | {fmt_euro(netto_daten['pkv_beitrag'])} |
+| {pkv_label} | {fmt_euro(netto_daten['pkv_beitrag'])} |
 | **Abzüge gesamt** | **{fmt_euro(netto_daten['abzuege_gesamt'])}** |
 | **Netto** | **{fmt_euro(netto_daten['netto'])}** |
         """)
+
+        # Kindergeld Info
+        if anzahl_kinder > 0:
+            st.markdown("---")
+            st.markdown("**Kindergeld (Info)**")
+            st.markdown(f"""
+| Info | Betrag |
+|------|-------:|
+| Kindergeld pro Kind | {fmt_euro(KINDERGELD_PRO_KIND)} |
+| Kindergeld gesamt ({anzahl_kinder} Kinder) | {fmt_euro(kindergeld_gesamt)} |
+            """)
+            st.caption("Kindergeld wird separat ausgezahlt und ist nicht im Netto enthalten.")
 
 with tab2:
     col_p1, col_p2 = st.columns([1, 2])
@@ -721,4 +748,4 @@ except ImportError:
 
 # Footer
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-st.caption("Beamtenrechner NRW | Alle Angaben ohne Gewähr | Stand 2024")
+st.caption("Beamtenrechner NRW | Alle Angaben ohne Gewähr | Stand Februar 2025")
