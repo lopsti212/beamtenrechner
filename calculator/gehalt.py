@@ -40,10 +40,12 @@ def berechne_bruttogehalt(
     # Strukturzulage
     strukturzulage = get_strukturzulage(besoldungsgruppe)
 
-    # Familienzuschlag
-    familienzuschlag_stufe1 = get_familienzuschlag_stufe1(mietenstufe) if verheiratet else 0.0
-    kinderzuschlag = get_kinderzuschlag(anzahl_kinder)
-    familienzuschlag_gesamt = familienzuschlag_stufe1 + kinderzuschlag
+    # Familienzuschlag (neue Struktur mit Besoldungsgruppe)
+    familienzuschlag_gesamt = get_familienzuschlag_gesamt(
+        verheiratet, anzahl_kinder, mietenstufe, besoldungsgruppe
+    )
+    familienzuschlag_stufe1 = get_familienzuschlag_stufe1(besoldungsgruppe) if verheiratet else 0.0
+    kinderzuschlag = get_kinderzuschlag(anzahl_kinder, mietenstufe, besoldungsgruppe)
 
     # Summe vor Arbeitszeit-Faktor
     brutto_vollzeit = grundgehalt + strukturzulage + familienzuschlag_gesamt
@@ -88,7 +90,7 @@ def berechne_ruhegehaltsfaehige_bezuege(
     """
     grundgehalt = get_grundgehalt(besoldungsgruppe, stufe)
     strukturzulage = get_strukturzulage(besoldungsgruppe)
-    familienzuschlag = get_familienzuschlag_stufe1(mietenstufe) if verheiratet else 0.0
+    familienzuschlag = get_familienzuschlag_stufe1(besoldungsgruppe) if verheiratet else 0.0
 
     # Ruhegehaltsfähige Bezüge (Vollzeit)
     bezuege = grundgehalt + strukturzulage + familienzuschlag
