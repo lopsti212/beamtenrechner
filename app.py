@@ -471,14 +471,25 @@ with col3:
     """, unsafe_allow_html=True)
 
 with col4:
-    du_abschlag_text = f"inkl. {du_rente['du_abschlag_prozent']:.2f}% Abschlag" if du_rente['du_abschlag_prozent'] > 0 else f"{du_rente['effektiver_ruhegehaltssatz']:.2f}% Ruhegehaltssatz"
-    st.markdown("""
-    <div class="result-card">
-        <div class="result-card-header">DU-Rente (""" + str(du_szenario_jahr) + """)</div>
-        <div class="result-value">""" + fmt_euro(du_rente['du_rente_brutto']) + """</div>
-        <div class="result-subvalue">Alter """ + str(du_rente['alter_bei_du']) + """, """ + du_abschlag_text + """</div>
-    </div>
-    """, unsafe_allow_html=True)
+    if du_rente.get('hat_anspruch', True):
+        du_abschlag_text = f"inkl. {du_rente['du_abschlag_prozent']:.2f}% Abschlag" if du_rente['du_abschlag_prozent'] > 0 else f"{du_rente['effektiver_ruhegehaltssatz']:.2f}% Ruhegehaltssatz"
+        if du_rente.get('wird_mindestversorgung', False):
+            du_abschlag_text = "Mindestversorgung"
+        st.markdown("""
+        <div class="result-card">
+            <div class="result-card-header">DU-Rente (""" + str(du_szenario_jahr) + """)</div>
+            <div class="result-value">""" + fmt_euro(du_rente['du_rente_brutto']) + """</div>
+            <div class="result-subvalue">Alter """ + str(du_rente['alter_bei_du']) + """, """ + du_abschlag_text + """</div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="result-card" style="border-color: #6b2b2b;">
+            <div class="result-card-header">DU-Rente (""" + str(du_szenario_jahr) + """)</div>
+            <div class="result-value" style="color: #e74c3c;">KEIN ANSPRUCH</div>
+            <div class="result-subvalue">Noch """ + str(du_rente['fehlende_dienstjahre']) + """ Jahre bis Anspruch (5 J. Wartezeit)</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Versorgungslücke
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
@@ -487,7 +498,20 @@ st.markdown("## Versorgungslücke bei Dienstunfähigkeit")
 col_vl1, col_vl2 = st.columns([3, 2])
 
 with col_vl1:
-    if versorgungsluecke > 0:
+    if not du_rente.get('hat_anspruch', True):
+        # Kein Anspruch - volle Versorgungslücke
+        st.markdown("""
+        <div class="warning-box" style="border-left-color: #8e44ad;">
+            <div class="warning-box-title" style="color: #9b59b6;">KEIN ANSPRUCH AUF DU-RENTE</div>
+            <div class="warning-box-value">""" + fmt_euro(netto_daten['netto']) + """ / Monat</div>
+            <div class="warning-box-detail">
+                Bei Dienstunfähigkeit im Jahr """ + str(du_szenario_jahr) + """ besteht <strong>kein Anspruch</strong> auf eine DU-Rente.<br>
+                Die 5-jährige Wartezeit ist noch nicht erfüllt (noch """ + str(du_rente['fehlende_dienstjahre']) + """ Jahre).<br>
+                <strong>Das gesamte Nettoeinkommen von """ + fmt_euro(netto_daten['netto'] * 12) + """ pro Jahr wäre nicht abgesichert.</strong>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    elif versorgungsluecke > 0:
         st.markdown("""
         <div class="warning-box">
             <div class="warning-box-title">VERSORGUNGSLÜCKE</div>
@@ -644,7 +668,21 @@ with tab2:
 
 with tab3:
     st.markdown("**DU-Renten-Berechnung**")
-    st.markdown(f"""
+    if not du_rente.get('hat_anspruch', True):
+        st.error(f"**Kein Anspruch auf DU-Rente** - Die 5-jährige Wartezeit ist nicht erfüllt.")
+        st.markdown(f"""
+| Parameter | Wert |
+|-----------|-----:|
+| DU-Szenario Jahr | {du_szenario_jahr} |
+| Alter bei DU | {du_rente['alter_bei_du']} Jahre |
+| Ist-Dienstjahre | {du_rente['ist_dienstjahre']:.2f} Jahre |
+| **Wartezeit erforderlich** | **5,00 Jahre** |
+| **Fehlende Dienstjahre** | **{du_rente['fehlende_dienstjahre']:.2f} Jahre** |
+| DU-Rente | **0,00 €** |
+        """)
+        st.info("Nach Erfüllung der 5-jährigen Wartezeit besteht Anspruch auf mindestens die Mindestversorgung.")
+    else:
+        st.markdown(f"""
 | Parameter | Wert |
 |-----------|-----:|
 | DU-Szenario Jahr | {du_szenario_jahr} |
@@ -659,7 +697,7 @@ with tab3:
 | **DU-Rente brutto** | **{fmt_euro(du_rente['du_rente_brutto'])}** |
 | Mindestversorgung | {fmt_euro(du_rente['mindestversorgung'])} |
 | Mindestversorgung aktiv? | {'Ja' if du_rente['wird_mindestversorgung'] else 'Nein'} |
-    """)
+        """)
 
 with tab4:
     col_v1, col_v2 = st.columns([2, 1])

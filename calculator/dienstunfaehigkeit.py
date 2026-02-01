@@ -31,6 +31,9 @@ DU_ABSCHLAG_ALTERSGRENZE = 63
 # Mindestversorgungssatz
 MINDESTVERSORGUNGSSATZ = 65.0  # Prozent
 
+# Wartezeit für Versorgungsanspruch
+WARTEZEIT_JAHRE = 5  # Mindestens 5 Jahre Dienstzeit für Anspruch
+
 
 def berechne_zurechnungszeit(
     alter_bei_du: int,
@@ -135,6 +138,33 @@ def berechne_du_rente(
         teilzeitanteil
     )
 
+    # Mindestversorgung berechnen
+    mindestversorgung = berechne_mindestversorgung()
+
+    # Prüfung: Wartezeit erfüllt (mindestens 5 Jahre Dienstzeit)?
+    hat_anspruch = ist_dienstjahre >= WARTEZEIT_JAHRE
+
+    if not hat_anspruch:
+        # Kein Anspruch auf DU-Rente bei weniger als 5 Dienstjahren
+        return {
+            "alter_bei_du": alter_bei_du,
+            "ist_dienstjahre": round(ist_dienstjahre, 2),
+            "zurechnungszeit": 0.0,
+            "gesamt_dienstjahre": round(ist_dienstjahre, 2),
+            "ruhegehaltssatz_roh": 0.0,
+            "ruhegehaltssatz": 0.0,
+            "du_abschlag_prozent": 0.0,
+            "effektiver_ruhegehaltssatz": 0.0,
+            "ruhegehaltsfaehige_bezuege": 0.0,
+            "du_rente_brutto": 0.0,
+            "mindestversorgung": mindestversorgung,
+            "wird_mindestversorgung": False,
+            "hat_anspruch": False,
+            "fehlende_dienstjahre": round(WARTEZEIT_JAHRE - ist_dienstjahre, 2),
+        }
+
+    # Ab hier: Anspruch vorhanden (>= 5 Jahre)
+
     # Zurechnungszeit
     zurechnungszeit = berechne_zurechnungszeit(alter_bei_du, jahr_du)
 
@@ -163,8 +193,7 @@ def berechne_du_rente(
     # DU-Rente brutto
     du_rente_brutto = ruhegehaltsfaehige_bezuege * (effektiver_satz / 100)
 
-    # Mindestversorgung prüfen
-    mindestversorgung = berechne_mindestversorgung()
+    # Mindestversorgung prüfen - gilt ab 5 Jahren Dienstzeit
     wird_mindestversorgung = du_rente_brutto < mindestversorgung
 
     if wird_mindestversorgung:
@@ -183,6 +212,8 @@ def berechne_du_rente(
         "du_rente_brutto": round(du_rente_brutto, 2),
         "mindestversorgung": mindestversorgung,
         "wird_mindestversorgung": wird_mindestversorgung,
+        "hat_anspruch": True,
+        "fehlende_dienstjahre": 0.0,
     }
 
 
