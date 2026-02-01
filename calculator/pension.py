@@ -21,8 +21,7 @@ ANTRAGSALTERSGRENZE_POLIZEI = 60
 
 # Versorgungsabschlag
 ABSCHLAG_PRO_JAHR = 3.6  # Prozent pro Jahr vor Altersgrenze
-MAX_ABSCHLAG_NORMAL = 14.4  # Maximum bei gesetzlicher Altersgrenze (67)
-MAX_ABSCHLAG_POLIZEI = 10.8  # Maximum bei besonderer Altersgrenze (Polizei/FW)
+MAX_ABSCHLAG = 10.8  # Maximum Versorgungsabschlag NRW (§16 LBeamtVG NRW)
 
 
 def berechne_dienstjahre(
@@ -108,9 +107,8 @@ def berechne_versorgungsabschlag(
     # Abschlag berechnen
     abschlag = jahre_vor_grenze * ABSCHLAG_PRO_JAHR
 
-    # Maximum beachten (unterschiedlich für Polizei/FW)
-    max_abschlag = MAX_ABSCHLAG_POLIZEI if ist_polizei_feuerwehr else MAX_ABSCHLAG_NORMAL
-    return min(abschlag, max_abschlag)
+    # Maximum beachten (10,8% in NRW)
+    return min(abschlag, MAX_ABSCHLAG)
 
 
 def berechne_ruhegehalt(

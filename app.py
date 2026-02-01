@@ -628,8 +628,8 @@ with tab2:
     with col_p2:
         st.markdown("**Pensionsentwicklung nach Alter**")
 
-        # Antragsaltersgrenze: 63 für normale Beamte, 60 für Polizei/FW
-        von_alter_vergleich = 60 if ist_polizei_feuerwehr else 63
+        # Antragsaltersgrenze: 63 für normale Beamte, 55 für Polizei/FW (Übersicht)
+        von_alter_vergleich = 55 if ist_polizei_feuerwehr else 63
 
         pension_verlauf = berechne_pension_nach_alter(
             besoldungsgruppe=besoldungsgruppe,

@@ -9,7 +9,7 @@ from calculator.pension import (
     MAX_RUHEGEHALTSSATZ,
     MIN_RUHEGEHALTSSATZ,
     ABSCHLAG_PRO_JAHR,
-    MAX_ABSCHLAG_POLIZEI  # Bei DU gilt max. 10,8% Abschlag
+    MAX_ABSCHLAG  # Max. 10,8% Abschlag in NRW
 )
 from data.besoldung import MINDESTVERSORGUNG_GRUNDGEHALT
 from data.familienzuschlag import STANDARD_MIETENSTUFE
@@ -81,8 +81,8 @@ def berechne_du_abschlag(alter_bei_du: int) -> float:
     jahre_vor_63 = DU_ABSCHLAG_ALTERSGRENZE - alter_bei_du
     abschlag = jahre_vor_63 * ABSCHLAG_PRO_JAHR
 
-    # Bei DU gilt max. 10,8% Abschlag (wie bei besonderer Altersgrenze)
-    return min(abschlag, MAX_ABSCHLAG_POLIZEI)
+    # Max. 10,8% Abschlag in NRW
+    return min(abschlag, MAX_ABSCHLAG)
 
 
 def berechne_mindestversorgung() -> float:
