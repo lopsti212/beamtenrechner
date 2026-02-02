@@ -281,7 +281,7 @@ du_rente = berechne_du_rente(
     ist_polizei_feuerwehr=ist_polizei_feuerwehr
 )
 
-versorgungsluecke = netto_daten["netto"] - du_rente["du_rente_brutto"]
+versorgungsluecke = gehalt["brutto"] - du_rente["du_rente_brutto"]
 
 # Kindergeld berechnen (nur zur Info, nicht im Netto enthalten)
 KINDERGELD_PRO_KIND = 259.0  # Stand 2026
@@ -351,7 +351,7 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
     col_slider1, col_slider2 = st.columns(2)
     with col_slider1:
         gewuenschte_absicherung = st.slider(
-            "Gewünschte Absicherung (% vom Netto)",
+            "Gewünschte Absicherung (% vom Brutto)",
             min_value=50,
             max_value=100,
             value=80,
@@ -374,7 +374,7 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
     gesamtluecke = versorgungsluecke * 12 * jahre_bis_pension if versorgungsluecke > 0 else 0
 
     # Gewünschte Absicherung berechnen
-    ziel_einkommen = netto_daten['netto'] * (gewuenschte_absicherung / 100)
+    ziel_einkommen = gehalt['brutto'] * (gewuenschte_absicherung / 100)
     benoetigte_bu_rente = max(0, ziel_einkommen - du_rente['du_rente_brutto']) if du_rente.get('hat_anspruch', True) else ziel_einkommen
 
     # Inflation berechnen
@@ -390,11 +390,11 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
         if not du_rente.get('hat_anspruch', True):
             # Kein Anspruch - volle Versorgungslücke
             st.error(f"**KEIN ANSPRUCH AUF DU-RENTE**")
-            st.metric(label="Versorgungslücke", value=f"{fmt_euro(netto_daten['netto'])} / Monat")
+            st.metric(label="Versorgungslücke", value=f"{fmt_euro(gehalt['brutto'])} / Monat")
             st.warning(
                 f"Bei Dienstunfähigkeit im Jahr {du_szenario_jahr} besteht **kein Anspruch** auf eine DU-Rente. "
                 f"Die 5-jährige Wartezeit ist noch nicht erfüllt (noch {du_rente['fehlende_dienstjahre']:.0f} Jahre). "
-                f"**Das gesamte Nettoeinkommen von {fmt_euro(netto_daten['netto'] * 12)} pro Jahr wäre nicht abgesichert.**"
+                f"**Das gesamte Bruttoeinkommen von {fmt_euro(gehalt['brutto'] * 12)} pro Jahr wäre nicht abgesichert.**"
             )
         elif versorgungsluecke > 0:
             st.markdown(f"""
@@ -407,16 +407,16 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
             if inflationsrate > 0:
                 st.caption(f"Bei {inflationsrate:.1f}% Inflation: {fmt_euro(versorgungsluecke_10j)}/Monat in 10 Jahren")
         else:
-            st.success("Keine Versorgungslücke - DU-Rente deckt das aktuelle Netto.")
+            st.success("Keine Versorgungslücke - DU-Rente deckt das aktuelle Brutto.")
 
     with col_vl2:
         fig_luecke = go.Figure()
 
         fig_luecke.add_trace(go.Bar(
-            x=["Netto", "DU-Rente"],
-            y=[netto_daten["netto"], du_rente["du_rente_brutto"]],
+            x=["Brutto", "DU-Rente"],
+            y=[gehalt["brutto"], du_rente["du_rente_brutto"]],
             marker_color=["#2e7d32", "#c62828"],
-            text=[fmt_euro(netto_daten["netto"]), fmt_euro(du_rente["du_rente_brutto"])],
+            text=[fmt_euro(gehalt["brutto"]), fmt_euro(du_rente["du_rente_brutto"])],
             textposition="inside",
             textfont=dict(color="white", size=11)
         ))
@@ -439,7 +439,7 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
 
     with col_abs1:
         st.metric(
-            label=f"Ziel: {gewuenschte_absicherung}% vom Netto",
+            label=f"Ziel: {gewuenschte_absicherung}% vom Brutto",
             value=fmt_euro(ziel_einkommen)
         )
 
@@ -485,7 +485,7 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
                 "alter": aktuelles_alter + jahre_offset,
                 "du_rente": szenario_du['du_rente_brutto'],
                 "hat_anspruch": szenario_du.get('hat_anspruch', True),
-                "luecke": netto_daten['netto'] - szenario_du['du_rente_brutto'] if szenario_du.get('hat_anspruch', True) else netto_daten['netto'],
+                "luecke": gehalt['brutto'] - szenario_du['du_rente_brutto'] if szenario_du.get('hat_anspruch', True) else gehalt['brutto'],
                 "jahre_bis_pension": regelaltersgrenze - (aktuelles_alter + jahre_offset)
             })
 
@@ -549,7 +549,7 @@ st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 with st.expander("Versorgungslücke zur Pension", expanded=False):
     # Berechnungen für Pensions-Versorgungslücke
-    versorgungsluecke_pension = netto_daten['netto'] - pension['ruhegehalt_brutto']
+    versorgungsluecke_pension = gehalt['brutto'] - pension['ruhegehalt_brutto']
 
     # Lebenserwartung für Gesamtlücke (statistische Lebenserwartung ~85 Jahre)
     lebenserwartung = 85
@@ -569,16 +569,16 @@ with st.expander("Versorgungslücke zur Pension", expanded=False):
             """)
             st.caption(f"Berechnung basiert auf Lebenserwartung von {lebenserwartung} Jahren")
         else:
-            st.success("Keine Versorgungslücke - Pension deckt das aktuelle Netto.")
+            st.success("Keine Versorgungslücke - Pension deckt das aktuelle Brutto.")
 
     with col_pl2:
         fig_pension_luecke = go.Figure()
 
         fig_pension_luecke.add_trace(go.Bar(
-            x=["Netto", "Pension"],
-            y=[netto_daten["netto"], pension["ruhegehalt_brutto"]],
+            x=["Brutto", "Pension"],
+            y=[gehalt["brutto"], pension["ruhegehalt_brutto"]],
             marker_color=["#2e7d32", "#f57c00"],
-            text=[fmt_euro(netto_daten["netto"]), fmt_euro(pension["ruhegehalt_brutto"])],
+            text=[fmt_euro(gehalt["brutto"]), fmt_euro(pension["ruhegehalt_brutto"])],
             textposition="inside",
             textfont=dict(color="white", size=11)
         ))
@@ -618,7 +618,7 @@ with st.expander("Versorgungslücke zur Pension", expanded=False):
             arbeitszeit_faktor=arbeitszeit_faktor,
             ist_polizei_feuerwehr=ist_polizei_feuerwehr
         )
-        luecke_p = netto_daten['netto'] - p['ruhegehalt_brutto']
+        luecke_p = gehalt['brutto'] - p['ruhegehalt_brutto']
         jahre_pension_p = max(0, lebenserwartung - alter)
         pension_szenarien.append({
             "alter": alter,
