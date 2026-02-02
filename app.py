@@ -30,7 +30,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS für professionelles dunkles Design
+# Custom CSS - unterstützt Light und Dark Theme
 st.markdown("""
 <style>
     /* Basis-Schriftgröße reduzieren */
@@ -38,33 +38,15 @@ st.markdown("""
         font-size: 13px;
     }
 
-    /* Haupthintergrund */
-    .stApp {
-        background-color: #1a1a1a;
-    }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #252525;
-        border-right: 1px solid #3a3a3a;
-    }
-
-    [data-testid="stSidebar"] .stMarkdown {
-        color: #e0e0e0;
-    }
-
     /* Header-Styling */
     h1 {
-        color: #ffffff !important;
         font-size: 1.8rem !important;
         font-weight: 600 !important;
-        border-bottom: 2px solid #4a4a4a;
         padding-bottom: 10px;
         margin-bottom: 20px !important;
     }
 
     h2 {
-        color: #e0e0e0 !important;
         font-size: 1.2rem !important;
         font-weight: 500 !important;
         margin-top: 15px !important;
@@ -72,7 +54,6 @@ st.markdown("""
     }
 
     h3 {
-        color: #d0d0d0 !important;
         font-size: 1rem !important;
         font-weight: 500 !important;
     }
@@ -80,50 +61,103 @@ st.markdown("""
     /* Metric-Styling */
     [data-testid="stMetricValue"] {
         font-size: 1.4rem !important;
-        color: #ffffff !important;
     }
 
     [data-testid="stMetricLabel"] {
         font-size: 0.8rem !important;
-        color: #a0a0a0 !important;
     }
 
-    /* Cards/Container */
-    .result-card {
-        background-color: #2a2a2a;
-        border: 1px solid #3a3a3a;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
+    /* Cards/Container - Dark Theme */
+    @media (prefers-color-scheme: dark) {
+        .result-card {
+            background-color: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .result-card-header {
+            color: #b0b0b0;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        .result-value {
+            color: #ffffff;
+        }
+        .result-subvalue {
+            color: #808080;
+        }
+        .warning-box {
+            background-color: #3d1f1f;
+            border: 1px solid #6b2b2b;
+            border-left: 4px solid #c0392b;
+        }
+        .warning-box-value {
+            color: #ffffff;
+        }
+        .warning-box-detail {
+            color: #b0b0b0;
+        }
+        .section-divider {
+            border-top: 1px solid #3a3a3a;
+        }
     }
 
+    /* Cards/Container - Light Theme */
+    @media (prefers-color-scheme: light) {
+        .result-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .result-card-header {
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .result-value {
+            color: #212529;
+        }
+        .result-subvalue {
+            color: #6c757d;
+        }
+        .warning-box {
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-left: 4px solid #c53030;
+        }
+        .warning-box-value {
+            color: #c53030;
+        }
+        .warning-box-detail {
+            color: #4a5568;
+        }
+        .section-divider {
+            border-top: 1px solid #dee2e6;
+        }
+    }
+
+    /* Gemeinsame Card-Styles */
     .result-card-header {
-        color: #b0b0b0;
         font-size: 0.85rem;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 8px;
         padding-bottom: 8px;
-        border-bottom: 1px solid #3a3a3a;
     }
 
     .result-value {
-        color: #ffffff;
         font-size: 1.5rem;
         font-weight: 600;
     }
 
     .result-subvalue {
-        color: #808080;
         font-size: 0.8rem;
     }
 
     /* Versorgungslücke-Box */
     .warning-box {
-        background-color: #3d1f1f;
-        border: 1px solid #6b2b2b;
-        border-left: 4px solid #c0392b;
         border-radius: 4px;
         padding: 15px;
         margin: 15px 0;
@@ -137,13 +171,11 @@ st.markdown("""
     }
 
     .warning-box-value {
-        color: #ffffff;
         font-size: 1.8rem;
         font-weight: 700;
     }
 
     .warning-box-detail {
-        color: #b0b0b0;
         font-size: 0.85rem;
         margin-top: 8px;
     }
@@ -153,99 +185,34 @@ st.markdown("""
         font-size: 0.85rem !important;
     }
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: #252525;
-        border-radius: 4px;
-        padding: 4px;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        color: #a0a0a0;
-        font-size: 0.85rem;
-    }
-
-    .stTabs [aria-selected="true"] {
-        color: #ffffff !important;
-        background-color: #3a3a3a;
-    }
-
-    /* Input-Felder in Sidebar */
-    [data-testid="stSidebar"] input,
-    [data-testid="stSidebar"] select {
+    table {
         font-size: 0.85rem !important;
     }
 
-    [data-testid="stSidebar"] label {
-        font-size: 0.8rem !important;
-        color: #b0b0b0 !important;
+    /* Tabs */
+    .stTabs [data-baseweb="tab"] {
+        font-size: 0.85rem;
+    }
+
+    /* Input-Felder */
+    input, select {
+        font-size: 0.85rem !important;
     }
 
     /* Sidebar Subheader */
     [data-testid="stSidebar"] h2 {
         font-size: 0.9rem !important;
-        color: #808080 !important;
-        border-bottom: 1px solid #3a3a3a;
         padding-bottom: 5px;
         margin-top: 20px !important;
     }
 
-    /* Divider */
-    hr {
-        border-color: #3a3a3a !important;
-    }
-
-    /* Button */
-    .stButton > button {
-        background-color: #3a3a3a;
-        color: #ffffff;
-        border: 1px solid #4a4a4a;
-        font-size: 0.85rem;
-    }
-
-    .stButton > button:hover {
-        background-color: #4a4a4a;
-        border-color: #5a5a5a;
-    }
-
-    /* Download Button */
-    .stDownloadButton > button {
-        background-color: #2d5a2d;
-        border-color: #3d7a3d;
-    }
-
-    /* Info Box in Sidebar */
-    [data-testid="stSidebar"] .stAlert {
-        background-color: #2a2a2a;
-        border: 1px solid #3a3a3a;
-        font-size: 0.75rem;
-        padding: 8px;
-    }
-
     /* Caption */
     .stCaption {
-        color: #707070 !important;
         font-size: 0.75rem !important;
-    }
-
-    /* Markdown Tabellen */
-    table {
-        font-size: 0.85rem !important;
-    }
-
-    th {
-        background-color: #2a2a2a !important;
-        color: #b0b0b0 !important;
-    }
-
-    td {
-        background-color: #1f1f1f !important;
-        color: #e0e0e0 !important;
     }
 
     /* Section Divider */
     .section-divider {
-        border-top: 1px solid #3a3a3a;
         margin: 20px 0;
     }
 </style>
@@ -569,24 +536,23 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
         fig_luecke.add_trace(go.Bar(
             x=["Netto", "DU-Rente"],
             y=[netto_daten["netto"], du_rente["du_rente_brutto"]],
-            marker_color=["#4a7c4a", "#7c4a4a"],
+            marker_color=["#2e7d32", "#c62828"],
             text=[fmt_euro(netto_daten["netto"]), fmt_euro(du_rente["du_rente_brutto"])],
             textposition="inside",
-            textfont=dict(color="#e0e0e0", size=11)
+            textfont=dict(color="white", size=11)
         ))
 
         fig_luecke.update_layout(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#a0a0a0', size=10),
             margin=dict(l=20, r=20, t=30, b=20),
             height=200,
-            yaxis=dict(gridcolor='#3a3a3a', showgrid=True),
+            yaxis=dict(showgrid=True, gridwidth=1),
             xaxis=dict(showgrid=False),
             showlegend=False
         )
 
-        st.plotly_chart(fig_luecke, use_container_width=True)
+        st.plotly_chart(fig_luecke, use_container_width=True, theme="streamlit")
 
     # Absicherungsbedarf
     st.markdown("### Absicherungsbedarf")
@@ -668,36 +634,35 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
                 name='DU-Rente',
                 x=jahre_labels,
                 y=du_werte,
-                marker_color='#4a6a4a',
+                marker_color='#2e7d32',
                 text=[fmt_euro(v) for v in du_werte],
                 textposition="inside",
-                textfont=dict(color="#e0e0e0", size=9)
+                textfont=dict(color="white", size=9)
             ))
 
             fig_timeline.add_trace(go.Bar(
                 name='Lücke',
                 x=jahre_labels,
                 y=luecke_werte,
-                marker_color='#6a4a4a',
+                marker_color='#c62828',
                 text=[fmt_euro(v) for v in luecke_werte],
                 textposition="inside",
-                textfont=dict(color="#e0e0e0", size=9)
+                textfont=dict(color="white", size=9)
             ))
 
             fig_timeline.update_layout(
                 barmode='stack',
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#a0a0a0', size=10),
                 margin=dict(l=20, r=20, t=30, b=30),
                 height=220,
-                yaxis=dict(gridcolor='#3a3a3a', showgrid=True),
+                yaxis=dict(showgrid=True, gridwidth=1),
                 xaxis=dict(showgrid=False, title="DU-Szenario"),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 showlegend=True
             )
 
-            st.plotly_chart(fig_timeline, use_container_width=True)
+            st.plotly_chart(fig_timeline, use_container_width=True, theme="streamlit")
             st.caption("Grün = DU-Rente, Rot = Versorgungslücke")
 
 # Detailierte Berechnungen
@@ -803,24 +768,23 @@ with st.expander("Details", expanded=False):
             fig_pension.add_trace(go.Bar(
                 x=alter_liste,
                 y=pension_liste,
-                marker_color=["#7c4a4a" if a > 0 else "#4a7c4a" for a in abschlag_liste],
+                marker_color=["#c62828" if a > 0 else "#2e7d32" for a in abschlag_liste],
                 text=[fmt_euro(p) for p in pension_liste],
                 textposition="inside",
-                textfont=dict(color="#e0e0e0", size=9)
+                textfont=dict(color="white", size=9)
             ))
 
             fig_pension.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#a0a0a0', size=10),
                 margin=dict(l=20, r=20, t=10, b=30),
                 height=250,
-                yaxis=dict(gridcolor='#3a3a3a', showgrid=True),
+                yaxis=dict(showgrid=True, gridwidth=1),
                 xaxis=dict(showgrid=False, title="Pensionsalter"),
                 showlegend=False
             )
 
-            st.plotly_chart(fig_pension, use_container_width=True)
+            st.plotly_chart(fig_pension, use_container_width=True, theme="streamlit")
             st.caption("Rot = mit Abschlag, Grün = ohne Abschlag")
 
     with tab3:
@@ -864,7 +828,7 @@ with st.expander("Details", expanded=False):
 
             kategorien = ["Brutto", "Netto", "DU-Rente", "Altersrente"]
             werte = [gehalt["brutto"], netto_daten["netto"], du_rente["du_rente_brutto"], pension["ruhegehalt_brutto"]]
-            farben = ["#5a5a5a", "#4a7c4a", "#7c4a4a", "#7c6a4a"]
+            farben = ["#757575", "#2e7d32", "#c62828", "#f57c00"]
 
             fig_vergleich.add_trace(go.Bar(
                 x=kategorien,
@@ -872,21 +836,20 @@ with st.expander("Details", expanded=False):
                 marker_color=farben,
                 text=[fmt_euro(w) for w in werte],
                 textposition="inside",
-                textfont=dict(color="#e0e0e0", size=11)
+                textfont=dict(color="white", size=11)
             ))
 
             fig_vergleich.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#a0a0a0', size=10),
                 margin=dict(l=20, r=20, t=20, b=30),
                 height=280,
-                yaxis=dict(gridcolor='#3a3a3a', showgrid=True),
+                yaxis=dict(showgrid=True, gridwidth=1),
                 xaxis=dict(showgrid=False),
                 showlegend=False
             )
 
-            st.plotly_chart(fig_vergleich, use_container_width=True)
+            st.plotly_chart(fig_vergleich, use_container_width=True, theme="streamlit")
 
         with col_v2:
             st.markdown("**Pensionsalter-Vergleich**")
