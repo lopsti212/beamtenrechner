@@ -30,7 +30,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - unterstützt Light und Dark Theme
+# Minimales CSS - nur strukturelle Styles, keine Farbüberladungen
 st.markdown("""
 <style>
     /* Basis-Schriftgröße reduzieren */
@@ -38,7 +38,7 @@ st.markdown("""
         font-size: 13px;
     }
 
-    /* Header-Styling */
+    /* Header-Styling - nur Größen */
     h1 {
         font-size: 1.8rem !important;
         font-weight: 600 !important;
@@ -58,126 +58,13 @@ st.markdown("""
         font-weight: 500 !important;
     }
 
-    /* Metric-Styling */
+    /* Metric-Styling - nur Größen */
     [data-testid="stMetricValue"] {
         font-size: 1.4rem !important;
     }
 
     [data-testid="stMetricLabel"] {
         font-size: 0.8rem !important;
-    }
-
-    /* Cards/Container - Dark Theme */
-    @media (prefers-color-scheme: dark) {
-        .result-card {
-            background-color: #2a2a2a;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .result-card-header {
-            color: #b0b0b0;
-            border-bottom: 1px solid #3a3a3a;
-        }
-        .result-value {
-            color: #ffffff;
-        }
-        .result-subvalue {
-            color: #808080;
-        }
-        .warning-box {
-            background-color: #3d1f1f;
-            border: 1px solid #6b2b2b;
-            border-left: 4px solid #c0392b;
-        }
-        .warning-box-value {
-            color: #ffffff;
-        }
-        .warning-box-detail {
-            color: #b0b0b0;
-        }
-        .section-divider {
-            border-top: 1px solid #3a3a3a;
-        }
-    }
-
-    /* Cards/Container - Light Theme */
-    @media (prefers-color-scheme: light) {
-        .result-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .result-card-header {
-            color: #495057;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .result-value {
-            color: #212529;
-        }
-        .result-subvalue {
-            color: #6c757d;
-        }
-        .warning-box {
-            background-color: #fff5f5;
-            border: 1px solid #feb2b2;
-            border-left: 4px solid #c53030;
-        }
-        .warning-box-value {
-            color: #c53030;
-        }
-        .warning-box-detail {
-            color: #4a5568;
-        }
-        .section-divider {
-            border-top: 1px solid #dee2e6;
-        }
-    }
-
-    /* Gemeinsame Card-Styles */
-    .result-card-header {
-        font-size: 0.85rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-        padding-bottom: 8px;
-    }
-
-    .result-value {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    .result-subvalue {
-        font-size: 0.8rem;
-    }
-
-    /* Versorgungslücke-Box */
-    .warning-box {
-        border-radius: 4px;
-        padding: 15px;
-        margin: 15px 0;
-    }
-
-    .warning-box-title {
-        color: #e74c3c;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .warning-box-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-    }
-
-    .warning-box-detail {
-        font-size: 0.85rem;
-        margin-top: 8px;
     }
 
     /* Tabellen */
@@ -411,54 +298,50 @@ st.markdown("## Übersicht")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown("""
-    <div class="result-card">
-        <div class="result-card-header">Aktuelles Brutto</div>
-        <div class="result-value">""" + fmt_euro(gehalt['brutto']) + """</div>
-        <div class="result-subvalue">""" + besoldungsgruppe + " Stufe " + str(stufe) + """</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.metric(
+        label="Aktuelles Brutto",
+        value=fmt_euro(gehalt['brutto']),
+        help=f"{besoldungsgruppe} Stufe {stufe}"
+    )
+    st.caption(f"{besoldungsgruppe} Stufe {stufe}")
 
 with col2:
-    st.markdown("""
-    <div class="result-card">
-        <div class="result-card-header">Aktuelles Netto</div>
-        <div class="result-value">""" + fmt_euro(netto_daten['netto']) + """</div>
-        <div class="result-subvalue">Steuerklasse """ + str(steuerklasse) + """</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.metric(
+        label="Aktuelles Netto",
+        value=fmt_euro(netto_daten['netto']),
+        help=f"Steuerklasse {steuerklasse}"
+    )
+    st.caption(f"Steuerklasse {steuerklasse}")
 
 with col3:
     abschlag_text = f"inkl. {pension['versorgungsabschlag_prozent']:.2f}% Abschlag" if pension['versorgungsabschlag_prozent'] > 0 else f"{pension['effektiver_ruhegehaltssatz']:.2f}% Ruhegehaltssatz"
     stufe_pension_text = f"Stufe {pension.get('stufe_bei_pension', stufe)}"
-    st.markdown("""
-    <div class="result-card">
-        <div class="result-card-header">Altersrente (""" + str(gewuenschtes_pensionsalter) + """ J.)</div>
-        <div class="result-value">""" + fmt_euro(pension['ruhegehalt_brutto']) + """</div>
-        <div class="result-subvalue">""" + stufe_pension_text + """, """ + abschlag_text + """</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.metric(
+        label=f"Altersrente ({gewuenschtes_pensionsalter} J.)",
+        value=fmt_euro(pension['ruhegehalt_brutto']),
+        help=f"{stufe_pension_text}, {abschlag_text}"
+    )
+    st.caption(f"{stufe_pension_text}, {abschlag_text}")
 
 with col4:
     if du_rente.get('hat_anspruch', True):
         du_abschlag_text = f"inkl. {du_rente['du_abschlag_prozent']:.2f}% Abschlag" if du_rente['du_abschlag_prozent'] > 0 else f"{du_rente['effektiver_ruhegehaltssatz']:.2f}% Ruhegehaltssatz"
         if du_rente.get('wird_mindestversorgung', False):
             du_abschlag_text = "Mindestversorgung"
-        st.markdown("""
-        <div class="result-card">
-            <div class="result-card-header">DU-Rente (""" + str(du_szenario_jahr) + """)</div>
-            <div class="result-value">""" + fmt_euro(du_rente['du_rente_brutto']) + """</div>
-            <div class="result-subvalue">Alter """ + str(du_rente['alter_bei_du']) + """, """ + du_abschlag_text + """</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label=f"DU-Rente ({du_szenario_jahr})",
+            value=fmt_euro(du_rente['du_rente_brutto']),
+            help=f"Alter {du_rente['alter_bei_du']}, {du_abschlag_text}"
+        )
+        st.caption(f"Alter {du_rente['alter_bei_du']}, {du_abschlag_text}")
     else:
-        st.markdown("""
-        <div class="result-card" style="border-color: #6b2b2b;">
-            <div class="result-card-header">DU-Rente (""" + str(du_szenario_jahr) + """)</div>
-            <div class="result-value" style="color: #e74c3c;">KEIN ANSPRUCH</div>
-            <div class="result-subvalue">Noch """ + str(du_rente['fehlende_dienstjahre']) + """ Jahre bis Anspruch (5 J. Wartezeit)</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label=f"DU-Rente ({du_szenario_jahr})",
+            value="KEIN ANSPRUCH",
+            delta=f"-{du_rente['fehlende_dienstjahre']:.0f} Jahre",
+            delta_color="inverse"
+        )
+        st.caption(f"Noch {du_rente['fehlende_dienstjahre']:.0f} Jahre bis Anspruch")
 
 # Versorgungslücke
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
@@ -506,17 +389,13 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
     with col_vl1:
         if not du_rente.get('hat_anspruch', True):
             # Kein Anspruch - volle Versorgungslücke
-            st.markdown("""
-            <div class="warning-box" style="border-left-color: #8e44ad;">
-                <div class="warning-box-title" style="color: #9b59b6;">KEIN ANSPRUCH AUF DU-RENTE</div>
-                <div class="warning-box-value">""" + fmt_euro(netto_daten['netto']) + """ / Monat</div>
-                <div class="warning-box-detail">
-                    Bei Dienstunfähigkeit im Jahr """ + str(du_szenario_jahr) + """ besteht <strong>kein Anspruch</strong> auf eine DU-Rente.<br>
-                    Die 5-jährige Wartezeit ist noch nicht erfüllt (noch """ + str(du_rente['fehlende_dienstjahre']) + """ Jahre).<br>
-                    <strong>Das gesamte Nettoeinkommen von """ + fmt_euro(netto_daten['netto'] * 12) + """ pro Jahr wäre nicht abgesichert.</strong>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.error(f"**KEIN ANSPRUCH AUF DU-RENTE**")
+            st.metric(label="Versorgungslücke", value=f"{fmt_euro(netto_daten['netto'])} / Monat")
+            st.warning(
+                f"Bei Dienstunfähigkeit im Jahr {du_szenario_jahr} besteht **kein Anspruch** auf eine DU-Rente. "
+                f"Die 5-jährige Wartezeit ist noch nicht erfüllt (noch {du_rente['fehlende_dienstjahre']:.0f} Jahre). "
+                f"**Das gesamte Nettoeinkommen von {fmt_euro(netto_daten['netto'] * 12)} pro Jahr wäre nicht abgesichert.**"
+            )
         elif versorgungsluecke > 0:
             st.markdown(f"""
 | Zeitraum | Fehlbetrag |
