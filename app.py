@@ -544,6 +544,140 @@ with st.expander("Versorgungslücke bei Dienstunfähigkeit", expanded=True):
             st.plotly_chart(fig_timeline, use_container_width=True, theme="streamlit")
             st.caption("Grün = DU-Rente, Rot = Versorgungslücke")
 
+# Versorgungslücke zur Pension
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+with st.expander("Versorgungslücke zur Pension", expanded=False):
+    # Berechnungen für Pensions-Versorgungslücke
+    versorgungsluecke_pension = netto_daten['netto'] - pension['ruhegehalt_brutto']
+
+    # Lebenserwartung für Gesamtlücke (statistische Lebenserwartung ~85 Jahre)
+    lebenserwartung = 85
+    jahre_in_pension = max(0, lebenserwartung - gewuenschtes_pensionsalter)
+    gesamtluecke_pension = versorgungsluecke_pension * 12 * jahre_in_pension if versorgungsluecke_pension > 0 else 0
+
+    col_pl1, col_pl2 = st.columns([3, 2])
+
+    with col_pl1:
+        if versorgungsluecke_pension > 0:
+            st.markdown(f"""
+| Zeitraum | Fehlbetrag |
+|----------|------------|
+| Pro Monat | {fmt_euro(versorgungsluecke_pension)} |
+| Pro Jahr | {fmt_euro(versorgungsluecke_pension * 12)} |
+| **Gesamte Pension ({jahre_in_pension} Jahre)** | **{fmt_euro(gesamtluecke_pension)}** |
+            """)
+            st.caption(f"Berechnung basiert auf Lebenserwartung von {lebenserwartung} Jahren")
+        else:
+            st.success("Keine Versorgungslücke - Pension deckt das aktuelle Netto.")
+
+    with col_pl2:
+        fig_pension_luecke = go.Figure()
+
+        fig_pension_luecke.add_trace(go.Bar(
+            x=["Netto", "Pension"],
+            y=[netto_daten["netto"], pension["ruhegehalt_brutto"]],
+            marker_color=["#2e7d32", "#f57c00"],
+            text=[fmt_euro(netto_daten["netto"]), fmt_euro(pension["ruhegehalt_brutto"])],
+            textposition="inside",
+            textfont=dict(color="white", size=11)
+        ))
+
+        fig_pension_luecke.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=30, b=20),
+            height=200,
+            yaxis=dict(showgrid=True, gridwidth=1),
+            xaxis=dict(showgrid=False),
+            showlegend=False
+        )
+
+        st.plotly_chart(fig_pension_luecke, use_container_width=True, theme="streamlit")
+
+    # Pensionsalter-Vergleich
+    st.markdown("### Vergleich nach Pensionsalter")
+
+    # Berechne Pension für verschiedene Pensionsalter
+    pension_szenarien = []
+    von_alter = 55 if ist_polizei_feuerwehr else 63
+    bis_alter = 60 if ist_polizei_feuerwehr else 67
+
+    for alter in range(von_alter, bis_alter + 1):
+        jahr_p = geburtsjahr + alter
+        p = berechne_ruhegehalt(
+            besoldungsgruppe=besoldungsgruppe,
+            stufe=stufe,
+            geburtsjahr=geburtsjahr,
+            jahr_verbeamtung=jahr_verbeamtung,
+            jahr_pension=jahr_p,
+            verheiratet=verheiratet,
+            mietenstufe=mietenstufe,
+            teilzeitjahre=teilzeitjahre,
+            teilzeitanteil=teilzeitanteil,
+            arbeitszeit_faktor=arbeitszeit_faktor,
+            ist_polizei_feuerwehr=ist_polizei_feuerwehr
+        )
+        luecke_p = netto_daten['netto'] - p['ruhegehalt_brutto']
+        jahre_pension_p = max(0, lebenserwartung - alter)
+        pension_szenarien.append({
+            "alter": alter,
+            "pension": p['ruhegehalt_brutto'],
+            "abschlag": p['versorgungsabschlag_prozent'],
+            "luecke": luecke_p,
+            "gesamtluecke": luecke_p * 12 * jahre_pension_p if luecke_p > 0 else 0
+        })
+
+    col_ps1, col_ps2 = st.columns([1, 2])
+
+    with col_ps1:
+        pension_text = "| Alter | Pension | Lücke/Monat | Abschlag |\n|------:|--------:|------------:|---------:|\n"
+        for ps in pension_szenarien:
+            pension_text += f"| {ps['alter']} | {fmt_euro(ps['pension'])} | {fmt_euro(ps['luecke'])} | {ps['abschlag']:.2f}% |\n"
+        st.markdown(pension_text)
+
+    with col_ps2:
+        fig_pension_timeline = go.Figure()
+
+        alter_labels = [str(ps['alter']) for ps in pension_szenarien]
+        pension_werte = [ps['pension'] for ps in pension_szenarien]
+        luecke_pension_werte = [max(0, ps['luecke']) for ps in pension_szenarien]
+
+        fig_pension_timeline.add_trace(go.Bar(
+            name='Pension',
+            x=alter_labels,
+            y=pension_werte,
+            marker_color='#f57c00',
+            text=[fmt_euro(v) for v in pension_werte],
+            textposition="inside",
+            textfont=dict(color="white", size=9)
+        ))
+
+        fig_pension_timeline.add_trace(go.Bar(
+            name='Lücke',
+            x=alter_labels,
+            y=luecke_pension_werte,
+            marker_color='#c62828',
+            text=[fmt_euro(v) for v in luecke_pension_werte],
+            textposition="inside",
+            textfont=dict(color="white", size=9)
+        ))
+
+        fig_pension_timeline.update_layout(
+            barmode='stack',
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=30, b=30),
+            height=220,
+            yaxis=dict(showgrid=True, gridwidth=1),
+            xaxis=dict(showgrid=False, title="Pensionsalter"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            showlegend=True
+        )
+
+        st.plotly_chart(fig_pension_timeline, use_container_width=True, theme="streamlit")
+        st.caption("Orange = Pension, Rot = Versorgungslücke")
+
 # Detailierte Berechnungen
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
